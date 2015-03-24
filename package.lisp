@@ -10,4 +10,4 @@
    #:grounded-extension-p
    #:stable-extension-p
    #:preferred-extension-p)
-  (:shadow #:setp #:subsetp))
+  (:shadow #:setp #:subsetp #:member))
