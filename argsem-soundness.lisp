@@ -2,6 +2,17 @@
 
 (in-package :argsem-soundness)
 
+(defvar *edges-cache*
+  (trivial-garbage:make-weak-hash-table :weakness :key))
+
+(defun edges (graph)
+  (multiple-value-bind (value hit)
+      (gethash graph *edges-cache*)
+    (if hit
+        value
+        (setf (gethash graph *edges-cache*)
+              (graph:edges graph)))))
+
 (defmacro with-member* ((list) &body body)
   (with-gensyms (hash)
     `(let ((,hash (make-hash-table)))
@@ -52,7 +63,7 @@
          (notany (lambda* ((a b))
                    (and (member* a)
                         (member* b)))
-                 (graph:edges graph)))))
+                 (edges graph)))))
 
 (defun acceptable-p (graph arguments argument)
   (every (lambda* ((b a))
@@ -60,7 +71,7 @@
                     (some (lambda (g)
                             (graph:has-edge-p graph (list g b)))
                           arguments)))
-         (graph:edges graph)))
+         (edges graph)))
 
 (defun admissible-extension-p (graph extension)
   (and (conflict-free-extension-p graph extension)
@@ -88,7 +99,7 @@
                   (some (lambda* ((b a))
                           (and (eql a argument)
                                (member* b)))
-                        (graph:edges graph)))
+                        (edges graph)))
                 (set-difference (graph:nodes graph) extension)))))
 
 (defun preferred-extension-p (graph extension)
