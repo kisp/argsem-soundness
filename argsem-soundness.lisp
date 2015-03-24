@@ -2,6 +2,18 @@
 
 (in-package :argsem-soundness)
 
+(defun setp* (list)
+  (let ((hash (make-hash-table)))
+    (dolist (x list t)
+      (if (gethash x hash)
+          (return)
+          (setf (gethash x hash) t)))))
+
+(defun subsetp* (a b)
+  (let ((hash (make-hash-table)))
+    (dolist (x b) (setf (gethash x hash) t))
+    (every (lambda (x) (gethash x hash)) a)))
+
 (defmacro lambda* (args &body body)
   (with-gensyms (=args=)
     `(lambda (&rest ,=args=)
@@ -19,8 +31,8 @@
           (append others (mapcar (curry #'cons x) others))))))
 
 (defun extension-p (graph extension)
-  (and (setp extension)
-       (subsetp extension (graph:nodes graph))))
+  (and (setp* extension)
+       (subsetp* extension (graph:nodes graph))))
 
 (defun conflict-free-extension-p (graph extension)
   (and (extension-p graph extension)
@@ -68,6 +80,6 @@
   (and (complete-extension-p graph extension)
        (every (lambda (set)
                 (implies (and (not (set-equal extension set))
-                              (subsetp extension set))
+                              (subsetp* extension set))
                          (not (complete-extension-p graph set))))
               (powerset (graph:nodes graph)))))

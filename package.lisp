@@ -9,4 +9,5 @@
    #:complete-extension-p
    #:grounded-extension-p
    #:stable-extension-p
-   #:preferred-extension-p))
+   #:preferred-extension-p)
+  (:shadow #:setp #:subsetp))
