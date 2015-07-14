@@ -5,6 +5,7 @@
 (defvar *edges-cache*
   (trivial-garbage:make-weak-hash-table :weakness :key))
 
+(declaim (ftype (function (t) (values list)) edges))
 (defun edges (graph)
   (multiple-value-bind (value hit)
       (gethash graph *edges-cache*)
@@ -12,6 +13,31 @@
         value
         (setf (gethash graph *edges-cache*)
               (graph:edges graph)))))
+
+(defvar *nodes-cache*
+  (trivial-garbage:make-weak-hash-table :weakness :key))
+
+(declaim (ftype (function (t) (values list)) nodes))
+(defun nodes (graph)
+  (multiple-value-bind (value hit)
+      (gethash graph *nodes-cache*)
+    (if hit
+        value
+        (setf (gethash graph *nodes-cache*)
+              (graph:nodes graph)))))
+
+(defvar *precedents-cache*
+  (trivial-garbage:make-weak-hash-table :weakness :key))
+
+(defun precedents (graph node)
+  (if-let ((hash (gethash graph *precedents-cache*)))
+    (gethash node hash)
+    (let ((hash (make-hash-table)))
+      (dolist (node (nodes graph))
+        (setf (gethash node hash)
+              (graph:precedents graph node)))
+      (setf (gethash graph *precedents-cache*) hash)
+      (gethash node hash))))
 
 (defmacro with-member* ((list) &body body)
   (with-gensyms (hash)
@@ -33,15 +59,17 @@
           (setf (gethash x hash) t)))))
 
 (defun subsetp* (a b)
+  (declare (list a))
   (let ((hash (make-hash-table)))
     (dolist (x b) (setf (gethash x hash) t))
     (every (lambda (x) (gethash x hash)) a)))
 
 (defmacro lambda* (args &body body)
-  (with-gensyms (=args=)
-    `(lambda (&rest ,=args=)
-       (destructuring-bind ,args ,=args=
-         ,@body))))
+  (declare (optimize (speed 0)))
+  (assert (eql 1 (length args)))
+  `(optima.extra:lambda-ematch
+     ((list ,@ (first args))
+      ,@body)))
 
 (defmacro implies (antecedent consequent)
   `(if ,antecedent ,consequent t))
@@ -55,7 +83,7 @@
 
 (defun extension-p (graph extension)
   (and (setp* extension)
-       (subsetp* extension (graph:nodes graph))))
+       (subsetp* extension (nodes graph))))
 
 (defun conflict-free-extension-p (graph extension)
   (with-member* (extension)
@@ -65,15 +93,29 @@
                         (member* b)))
                  (edges graph)))))
 
-(defun acceptable-p (graph arguments argument)
-  (every (lambda* ((b a))
-           (implies (eql a argument)
-                    (some (lambda (g)
-                            (graph:has-edge-p graph (list g b)))
-                          arguments)))
-         (edges graph)))
+(let ((list (list nil nil)))
+  (defun acceptable-p (graph arguments argument)
+    (declare (list arguments)
+             (graph:graph graph))
+    #+nil
+    (every (lambda* ((b a))
+             (implies (eql a argument)
+                      (some (lambda (g)
+                              (setf (first list) g
+                                    (second list) b)
+                              (graph:has-edge-p graph list))
+                            arguments)))
+           (edges graph))
+    (every (lambda (b)
+             (some (lambda (g)
+                     (setf (first list) g
+                           (second list) b)
+                     (graph:has-edge-p graph list))
+                   arguments))
+           (the list (precedents graph argument)))))
 
 (defun admissible-extension-p (graph extension)
+  (declare (type list extension))
   (and (conflict-free-extension-p graph extension)
        (every (curry #'acceptable-p graph extension)
               extension)))
@@ -84,7 +126,7 @@
          (every (lambda (argument)
                   (implies (acceptable-p graph extension argument)
                            (member* argument)))
-                (graph:nodes graph)))))
+                (nodes graph)))))
 
 (defun grounded-extension-p (graph extension)
   (and (complete-extension-p graph extension)
@@ -100,7 +142,7 @@
                           (and (eql a argument)
                                (member* b)))
                         (edges graph)))
-                (set-difference (graph:nodes graph) extension)))))
+                (set-difference (nodes graph) extension)))))
 
 (defun preferred-extension-p (graph extension)
   (and (complete-extension-p graph extension)
@@ -108,4 +150,4 @@
                 (implies (and (not (set-equal extension set))
                               (subsetp* extension set))
                          (not (complete-extension-p graph set))))
-              (powerset (graph:nodes graph)))))
+              (powerset (nodes graph)))))

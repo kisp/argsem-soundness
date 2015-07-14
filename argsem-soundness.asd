@@ -13,7 +13,7 @@
                (:file "package")
                (:file "argsem-soundness" :depends-on ("package"))
                )
-  :depends-on (:alexandria :graph :trivial-garbage))
+  :depends-on (:alexandria :graph :trivial-garbage :optima))
 
 (defmethod perform ((op test-op)
                     (system (eql (find-system :argsem-soundness))))
