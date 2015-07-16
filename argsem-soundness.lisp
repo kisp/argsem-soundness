@@ -73,6 +73,10 @@
                           arguments)))
          (edges graph)))
 
+(defun characteristic-function (graph arguments)
+  (remove-if-not (curry #'acceptable-p graph arguments)
+                 (graph:nodes graph)))
+
 (defun admissible-extension-p (graph extension)
   (and (conflict-free-extension-p graph extension)
        (every (curry #'acceptable-p graph extension)
