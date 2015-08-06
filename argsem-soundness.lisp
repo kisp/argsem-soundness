@@ -77,6 +77,9 @@
   (remove-if-not (curry #'acceptable-p graph arguments)
                  (graph:nodes graph)))
 
+(defun characteristic-function-fixpoint-p (graph arguments)
+  (set-equal arguments (characteristic-function graph arguments)))
+
 (defun admissible-extension-p (graph extension)
   (and (conflict-free-extension-p graph extension)
        (every (curry #'acceptable-p graph extension)

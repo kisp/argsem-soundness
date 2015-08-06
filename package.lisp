@@ -12,5 +12,6 @@
    #:stable-extension-p
    #:preferred-extension-p
    #:acceptable-p
-   #:characteristic-function)
+   #:characteristic-function
+   #:characteristic-function-fixpoint-p)
   (:shadow #:setp #:subsetp #:member))

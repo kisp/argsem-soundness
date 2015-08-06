@@ -150,3 +150,28 @@
   (is-true (preferred-extension-p
             (populate (make-instance 'digraph) :nodes '(d) :edges '((a b) (b a) (b c)))
             '(a c d))))
+
+(deftest characteristic-function.1
+  (is (set-equal '(a)
+                 (characteristic-function
+                  (populate (make-instance 'digraph) :nodes '(a)) '())))
+  (is (set-equal '()
+                 (characteristic-function
+                  (populate (make-instance 'digraph)
+                            :nodes '(a) :edges '((a a)))
+                  '())))
+  (is (set-equal '()
+                 (characteristic-function
+                  (populate (make-instance 'digraph)
+                            :nodes '(a b) :edges '((a b) (b a)))
+                  '()))))
+
+(deftest characteristic-function-fixpoint-p.1
+  (is-true (characteristic-function-fixpoint-p
+            (populate (make-instance 'digraph)
+                      :nodes '(a b) :edges '((a b) (b a)))
+            '()))
+  (is-false (characteristic-function-fixpoint-p
+             (populate (make-instance 'digraph)
+                       :nodes '(a b) :edges '((a b)))
+             '())))
