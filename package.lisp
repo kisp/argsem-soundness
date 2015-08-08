@@ -13,5 +13,6 @@
    #:preferred-extension-p
    #:acceptable-p
    #:characteristic-function
-   #:characteristic-function-fixpoint-p)
+   #:characteristic-function-fixpoint-p
+   #:count-extensions)
   (:shadow #:setp #:subsetp #:member))

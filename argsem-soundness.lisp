@@ -53,13 +53,21 @@
         (let ((others (powerset xs)))
           (append others (mapcar (curry #'cons x) others))))))
 
-(defun extension-p (graph arguments)
-  (and (setp* arguments)
-       (subsetp* arguments (graph:nodes graph))))
+(defun count-extensions (graph predicate)
+  "Count how many extensions in the powerset of the nodes of graph
+satisfy predicate. Predicate is expected to be binary, taking as
+arguments graph and extension."
+  (count-if (lambda (extension)
+              (funcall predicate graph extension))
+            (powerset (graph:nodes graph))))
 
-(defun conflict-free-extension-p (graph arguments)
-  (with-member* (arguments)
-    (and (extension-p graph arguments)
+(defun extension-p (graph extension)
+  (and (setp* extension)
+       (subsetp* extension (graph:nodes graph))))
+
+(defun conflict-free-extension-p (graph extension)
+  (with-member* (extension)
+    (and (extension-p graph extension)
          (notany (lambda* ((a b))
                    (and (member* a)
                         (member* b)))
