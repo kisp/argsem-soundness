@@ -61,6 +61,14 @@ arguments graph and extension."
               (funcall predicate graph extension))
             (powerset (graph:nodes graph))))
 
+(defun list-extensions (graph predicate)
+  "List extensions contained in the powersetof the nodes of graph that
+satisfy predicate. Predicate is expected to be binary, taking as
+arguments graph and extension."
+  (remove-if-not (lambda (extension)
+                   (funcall predicate graph extension))
+                 (powerset (graph:nodes graph))))
+
 (defun extension-p (graph extension)
   (and (setp* extension)
        (subsetp* extension (graph:nodes graph))))
