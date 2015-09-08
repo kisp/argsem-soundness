@@ -4,13 +4,6 @@
 
 (defsuite* :argsem-soundness-test)
 
-(defun powerset (set)
-  (if (null set)
-      '(())
-      (destructuring-bind (x . xs) set
-        (let ((others (powerset xs)))
-          (append others (mapcar (curry #'cons x) others))))))
-
 (deftest extension-p.1
   (is-true (extension-p (populate (make-instance 'digraph) :nodes '(a b c))
                         '(a b c)))
