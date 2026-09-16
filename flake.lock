@@ -1,0 +1,43 @@
+{
+  "nodes": {
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1789426278,
+        "narHash": "sha256-GnotcvKtbTMnoVx6G4E7ZdUX6487Dky74dqq3pU7iRk=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "efe6f071ede9d21c37462d2d6682d5e670099684",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "pauldist": {
+      "locked": {
+        "lastModified": 1789570839,
+        "narHash": "sha256-GLs6Qgy237MopWOdaB+RL2qo1q0M7QbR4ESYUmyxHMk=",
+        "owner": "kisp",
+        "repo": "pauldist-nix-importer",
+        "rev": "15fc57f6db19449934870bf8ca5f9e13bb95f4d1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "kisp",
+        "repo": "pauldist-nix-importer",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "nixpkgs": "nixpkgs",
+        "pauldist": "pauldist"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
