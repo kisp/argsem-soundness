@@ -8,7 +8,9 @@
   :components ((:module "test"
                 :components ((:file "package")
                              (:file "test" :depends-on ("package")))))
-  :depends-on (:argsem-soundness :myam :alexandria))
+  ;; GRAPH is no longer a dependency of argsem-soundness itself; the
+;; tests still exercise the graph-object path, so they ask for it.
+  :depends-on (:argsem-soundness :myam :alexandria :graph))
 
 (defmethod perform ((op test-op)
                     (system (eql (find-system :argsem-soundness-test))))

@@ -168,3 +168,40 @@
              (populate (make-instance 'digraph)
                        :nodes '(a b) :edges '((a b)))
              '())))
+
+;;; The AF struct: the same frameworks without the GRAPH library.
+;;; These must agree with the graph-object tests above argument for
+;;; argument -- that is the whole point of the protocol.
+
+(deftest af-struct.nodes-and-edges
+  (let ((af (make-af '(a b c) '((a b) (b c)))))
+    (is (equal '(a b c) (nodes-of af)))
+    (is (equal '((a b) (b c)) (edges-of af)))))
+
+(deftest af-struct.agrees-with-a-graph
+  (dolist (spec '(((a b c) ())
+                  ((a b) ((a b)))
+                  ((a b c) ((a b) (b c)))
+                  ((a b c) ((a b) (b c) (c a)))
+                  ((a b c d) ((a b) (b c) (c a) (c d)))))
+    (destructuring-bind (nodes edges) spec
+      (let ((af (make-af nodes edges))
+            (g (populate (make-instance 'digraph) :nodes nodes :edges edges)))
+        (dolist (predicate (list #'conflict-free-extension-p
+                                 #'admissible-extension-p
+                                 #'complete-extension-p
+                                 #'grounded-extension-p
+                                 #'stable-extension-p
+                                 #'preferred-extension-p))
+          (is (equal (list-extensions g predicate)
+                     (list-extensions af predicate))))))))
+
+(deftest af-struct.reinstatement
+  ;; a attacks b, b attacks c: the grounded extension reinstates c
+  (let ((af (make-af '(a b c) '((a b) (b c)))))
+    (is (equal '((a c)) (mapcar (lambda (e) (sort (copy-list e) #'string<
+                                                  :key #'symbol-name))
+                                (list-extensions af #'grounded-extension-p))))))
+
+(deftest af-struct.without-graph-loaded-a-plain-object-errors
+  (signals error (nodes-of "not a framework")))

@@ -18,11 +18,53 @@
            (setf (gethash ,key ,hash)
                  (,fn-name ,key))))))
 
-(defun edges (graph)
-  (cached graph:edges graph *edges-cache*))
+(defstruct (af (:constructor make-af (arguments attacks)))
+  "An abstract argumentation framework as plain data: a list of ARGUMENTS
+and a list of ATTACKS, each attack a two-element list (attacker target)."
+  (arguments '() :read-only t)
+  (attacks '() :read-only t))
 
-(defun nodes (graph)
-  (cached graph:nodes graph *nodes-cache*))
+(defgeneric nodes-of (af)
+  (:documentation "The arguments of AF, as a list."))
+
+(defgeneric edges-of (af)
+  (:documentation "The attacks of AF, as a list of (attacker target)."))
+
+(defmethod nodes-of ((af af))
+  (af-arguments af))
+
+(defmethod edges-of ((af af))
+  (af-attacks af))
+
+(defun graph-reader (name object)
+  "The GRAPH library's NAME reader, looked up at run time.
+
+Only two things are ever asked of a framework -- its arguments and its
+attacks -- so requiring the GRAPH library for two readers is a poor trade:
+it is a package-inferred-system and pulls five more systems in behind it.
+It is therefore supported without being depended on. Pass a graph object
+and it is used if GRAPH happens to be loaded; pass an AF struct and nothing
+outside alexandria and trivial-garbage is needed at all."
+  (let* ((package (find-package "GRAPH"))
+         (symbol (and package (find-symbol name package))))
+    (unless (and symbol (fboundp symbol))
+      (error "~s is not an argumentation framework: it is not an AF struct ~
+              \(see MAKE-AF), and the GRAPH library, whose ~a it would ~
+              otherwise be asked for, is not loaded."
+             object name))
+    (symbol-function symbol)))
+
+(defmethod nodes-of (af)
+  (funcall (graph-reader "NODES" af) af))
+
+(defmethod edges-of (af)
+  (funcall (graph-reader "EDGES" af) af))
+
+(defun edges (af)
+  (cached edges-of af *edges-cache*))
+
+(defun nodes (af)
+  (cached nodes-of af *nodes-cache*))
 
 (defmacro with-member* ((list) &body body)
   `(macrolet ((member* (x) `(cl::member ,x ,',list)))

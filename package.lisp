@@ -3,6 +3,14 @@
 (defpackage :argsem-soundness
   (:use :common-lisp :alexandria)
   (:export
+   ;; the framework protocol
+   #:af
+   #:make-af
+   #:af-arguments
+   #:af-attacks
+   #:nodes-of
+   #:edges-of
+   ;; semantics
    #:powerset
    #:extension-p
    #:conflict-free-extension-p
